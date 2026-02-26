@@ -23,10 +23,10 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _login() {
+  void _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final error = AppState().login(
+    final error = await AppState().login(
       _emailController.text.trim(),
       _passwordController.text,
     );
@@ -37,7 +37,8 @@ class _LoginScreenState extends State<LoginScreen> {
           content: Text(error),
           backgroundColor: Colors.red.shade400,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -134,8 +135,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               fillColor: const Color(0xFFF0FDFA),
                             ),
                             validator: (v) {
-                              if (v == null || v.trim().isEmpty) return 'Enter your email';
-                              if (!v.contains('@')) return 'Enter a valid email';
+                              if (v == null || v.trim().isEmpty)
+                                return 'Enter your email';
+                              if (!v.contains('@'))
+                                return 'Enter a valid email';
                               return null;
                             },
                           ),
@@ -164,8 +167,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               filled: true,
                               fillColor: const Color(0xFFF0FDFA),
                             ),
-                            validator: (v) =>
-                                (v == null || v.length < 4) ? 'Min 4 characters' : null,
+                            validator: (v) => (v == null || v.length < 4)
+                                ? 'Min 4 characters'
+                                : null,
                           ),
                           const SizedBox(height: 24),
                           SizedBox(
@@ -208,7 +212,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         onTap: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => const SignupScreen()),
+                            MaterialPageRoute(
+                                builder: (_) => const SignupScreen()),
                           );
                         },
                         child: const Text(

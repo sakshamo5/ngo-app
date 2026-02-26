@@ -4,6 +4,38 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'ngo.dart';
 import 'user.dart';
 
+class DonationRecord {
+  final String ngoId;
+  final String ngoName;
+  final double amount;
+  final DateTime date;
+  final String paymentMethod;
+
+  DonationRecord({
+    required this.ngoId,
+    required this.ngoName,
+    required this.amount,
+    required this.date,
+    required this.paymentMethod,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'ngoId': ngoId,
+        'ngoName': ngoName,
+        'amount': amount,
+        'date': date.toIso8601String(),
+        'paymentMethod': paymentMethod,
+      };
+
+  factory DonationRecord.fromMap(Map<String, dynamic> map) => DonationRecord(
+        ngoId: map['ngoId'] as String,
+        ngoName: map['ngoName'] as String,
+        amount: (map['amount'] as num).toDouble(),
+        date: DateTime.parse(map['date'] as String),
+        paymentMethod: map['paymentMethod'] as String,
+      );
+}
+
 class AppState extends ChangeNotifier {
   // Singleton
   static final AppState _instance = AppState._internal();
@@ -13,10 +45,13 @@ class AppState extends ChangeNotifier {
   AppUser? _user;
   final List<Ngo> _ngos = List.from(Ngo.dummyNgos);
   List<AppUser> _registeredUsers = [];
+  List<DonationRecord> _donationHistory = [];
 
   AppUser? get user => _user;
   List<Ngo> get ngos => _ngos;
   bool get isLoggedIn => _user != null;
+  List<DonationRecord> get donationHistory =>
+      List.unmodifiable(_donationHistory);
 
   List<Ngo> ngosByCategory(String category) =>
       _ngos.where((n) => n.category == category).toList();
@@ -48,17 +83,30 @@ class AppState extends ChangeNotifier {
     if (sessionEmail != null) {
       try {
         _user = _registeredUsers.firstWhere((u) => u.email == sessionEmail);
+        // Load this user's donation history
+        _donationHistory = _loadHistoryForEmail(prefs, sessionEmail);
       } catch (_) {
         _user = null;
       }
     }
   }
 
+  /// Reads donation history for a specific user email from prefs.
+  List<DonationRecord> _loadHistoryForEmail(
+      SharedPreferences prefs, String email) {
+    final key = 'donation_history_$email';
+    final historyJson = prefs.getString(key);
+    if (historyJson == null) return [];
+    final List<dynamic> list = jsonDecode(historyJson);
+    return list.map((m) => DonationRecord.fromMap(m)).toList();
+  }
+
   Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
 
     // Save registered users (includes balances)
-    final usersJson = jsonEncode(_registeredUsers.map((u) => u.toMap()).toList());
+    final usersJson =
+        jsonEncode(_registeredUsers.map((u) => u.toMap()).toList());
     await prefs.setString('registered_users', usersJson);
 
     // Save NGO raised amounts
@@ -67,6 +115,13 @@ class AppState extends ChangeNotifier {
       raised[ngo.id] = ngo.raisedAmount;
     }
     await prefs.setString('ngo_raised', jsonEncode(raised));
+
+    // Save donation history (per user)
+    if (_user != null) {
+      final historyJson =
+          jsonEncode(_donationHistory.map((d) => d.toMap()).toList());
+      await prefs.setString('donation_history_${_user!.email}', historyJson);
+    }
 
     // Save current session
     if (_user != null) {
@@ -97,13 +152,16 @@ class AppState extends ChangeNotifier {
   }
 
   /// Returns null on success, or an error message string.
-  String? login(String email, String password) {
+  Future<String?> login(String email, String password) async {
     email = email.trim().toLowerCase();
     try {
       final found = _registeredUsers.firstWhere(
         (u) => u.email == email && u.password == password,
       );
       _user = found;
+      // Load this user's donation history on every login
+      final prefs = await SharedPreferences.getInstance();
+      _donationHistory = _loadHistoryForEmail(prefs, found.email);
       notifyListeners();
       _save();
       return null; // success
@@ -113,17 +171,29 @@ class AppState extends ChangeNotifier {
   }
 
   void logout() {
+    // Don't wipe history from prefs — just clear from memory
     _user = null;
+    _donationHistory = [];
     notifyListeners();
     _save();
   }
 
   // ─── Donation ───
-  bool donate(String ngoId, double amount) {
+  bool donate(String ngoId, double amount, {String paymentMethod = 'UPI'}) {
     if (_user == null || _user!.balance < amount || amount <= 0) return false;
     final ngo = _ngos.firstWhere((n) => n.id == ngoId);
     _user!.balance -= amount;
     ngo.raisedAmount += amount;
+    _donationHistory.insert(
+      0,
+      DonationRecord(
+        ngoId: ngoId,
+        ngoName: ngo.name,
+        amount: amount,
+        date: DateTime.now(),
+        paymentMethod: paymentMethod,
+      ),
+    );
     notifyListeners();
     _save();
     return true;

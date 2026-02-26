@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/app_state.dart';
 import 'ngo_list_screen.dart';
 import 'profile_screen.dart';
+import 'history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,8 +32,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      _buildHome(),
+      const HistoryScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
-      body: _currentIndex == 0 ? _buildHome() : const ProfileScreen(),
+      body: pages[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -60,6 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: 'Home',
               ),
               BottomNavigationBarItem(
+                icon: Icon(Icons.history_rounded),
+                label: 'History',
+              ),
+              BottomNavigationBarItem(
                 icon: Icon(Icons.person_rounded),
                 label: 'Profile',
               ),
@@ -73,9 +84,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHome() {
     final user = AppState().user;
     final categories = [
-      {'name': 'Education', 'icon': Icons.school, 'color': const Color(0xFF6C63FF)},
-      {'name': 'Health', 'icon': Icons.local_hospital, 'color': const Color(0xFFFF6B6B)},
-      {'name': 'Environment', 'icon': Icons.eco, 'color': const Color(0xFF2ECC71)},
+      {
+        'name': 'Education',
+        'icon': Icons.school,
+        'color': const Color(0xFF6C63FF)
+      },
+      {
+        'name': 'Health',
+        'icon': Icons.local_hospital,
+        'color': const Color(0xFFFF6B6B)
+      },
+      {
+        'name': 'Environment',
+        'icon': Icons.eco,
+        'color': const Color(0xFF2ECC71)
+      },
       {'name': 'Animals', 'icon': Icons.pets, 'color': const Color(0xFFFFA502)},
     ];
 
@@ -255,7 +278,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: AppState().ngos.length > 4 ? 4 : AppState().ngos.length,
+                  itemCount:
+                      AppState().ngos.length > 4 ? 4 : AppState().ngos.length,
                   itemBuilder: (context, index) {
                     final ngo = AppState().ngos[index];
                     return Container(
@@ -293,7 +317,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(6),
                             child: LinearProgressIndicator(
                               value: ngo.progress,
-                              backgroundColor: ngo.color.withValues(alpha: 0.15),
+                              backgroundColor:
+                                  ngo.color.withValues(alpha: 0.15),
                               valueColor: AlwaysStoppedAnimation(ngo.color),
                               minHeight: 6,
                             ),

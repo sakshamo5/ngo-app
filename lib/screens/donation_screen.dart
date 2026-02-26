@@ -46,7 +46,8 @@ class _DonationScreenState extends State<DonationScreen> {
           content: const Text('Please enter a valid amount'),
           backgroundColor: Colors.red.shade400,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -56,10 +57,12 @@ class _DonationScreenState extends State<DonationScreen> {
     if (amount > balance) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Insufficient balance. Your balance is ₹${balance.toStringAsFixed(0)}'),
+          content: Text(
+              'Insufficient balance. Your balance is ₹${balance.toStringAsFixed(0)}'),
           backgroundColor: Colors.red.shade400,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -106,7 +109,11 @@ class _DonationScreenState extends State<DonationScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              final success = AppState().donate(widget.ngo.id, amount);
+              final success = AppState().donate(
+                widget.ngo.id,
+                amount,
+                paymentMethod: _selectedPayment,
+              );
               Navigator.pop(ctx);
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -115,7 +122,8 @@ class _DonationScreenState extends State<DonationScreen> {
                       children: [
                         const Icon(Icons.check_circle, color: Colors.white),
                         const SizedBox(width: 10),
-                        Text('₹${amount.toStringAsFixed(0)} donated successfully!'),
+                        Text(
+                            '₹${amount.toStringAsFixed(0)} donated successfully!'),
                       ],
                     ),
                     backgroundColor: const Color(0xFF0D9488),
@@ -212,7 +220,8 @@ class _DonationScreenState extends State<DonationScreen> {
                       color: widget.ngo.color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(widget.ngo.icon, color: widget.ngo.color, size: 24),
+                    child: Icon(widget.ngo.icon,
+                        color: widget.ngo.color, size: 24),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -227,7 +236,7 @@ class _DonationScreenState extends State<DonationScreen> {
                             color: Color(0xFF1E293B),
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Text(
                           widget.ngo.category,
                           style: TextStyle(
@@ -312,12 +321,10 @@ class _DonationScreenState extends State<DonationScreen> {
                     child: OutlinedButton(
                       onPressed: () => _setAmount(amount),
                       style: OutlinedButton.styleFrom(
-                        backgroundColor: isSelected
-                            ? widget.ngo.color
-                            : Colors.white,
-                        foregroundColor: isSelected
-                            ? Colors.white
-                            : widget.ngo.color,
+                        backgroundColor:
+                            isSelected ? widget.ngo.color : Colors.white,
+                        foregroundColor:
+                            isSelected ? Colors.white : widget.ngo.color,
                         side: BorderSide(
                           color: isSelected
                               ? widget.ngo.color
@@ -359,14 +366,14 @@ class _DonationScreenState extends State<DonationScreen> {
                 onTap: () => setState(() => _selectedPayment = method),
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: isSelected
-                          ? widget.ngo.color
-                          : Colors.grey.shade200,
+                      color:
+                          isSelected ? widget.ngo.color : Colors.grey.shade200,
                       width: isSelected ? 2 : 1,
                     ),
                   ),
@@ -378,7 +385,9 @@ class _DonationScreenState extends State<DonationScreen> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isSelected ? widget.ngo.color : Colors.grey.shade400,
+                            color: isSelected
+                                ? widget.ngo.color
+                                : Colors.grey.shade400,
                             width: 2,
                           ),
                         ),
