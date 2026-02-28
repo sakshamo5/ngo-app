@@ -1,5 +1,5 @@
-name: ngo_donation_ui
-description: "A new Flutter project."
+name: HelpBridge
+description: "NGO Donation MAnagement & Records App"
 publish_to: 'none'
 
 version: 1.0.0+1
